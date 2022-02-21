@@ -75,12 +75,12 @@ class BBTan:
 
             # user selecting where to shoot
             for event in pygame.event.get():
-                if event == pygame.QUIT:
+                if event.type == pygame.QUIT:
                     pygame.quit()
                     exit(0)
 
-                if event == pygame.MOUSEBUTTONDOWN:
-                    if self.balls_running:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if not self.balls_running:
                         self.balls_running = True
                         mouse_pos = pygame.mouse.get_pos()
                         print('click location: ' + str(mouse_pos[0]) + ', ' + str(mouse_pos[1]))
