@@ -73,7 +73,15 @@ class BBTan:
                 for ball in self.balls:
                     self.screen.blit(self.ball, (ball[1], ball[2]))
 
+            # write level number
+            font = pygame.font.Font(None, 24)
+
+
             pygame.display.flip()
+            level_text = font.render("Level: " + str(self.level), True, (255, 255, 255))
+            textRect = level_text.get_rect()
+            textRect.topright = [0, 0]
+            self.screen.blit(level_text, textRect)
 
             # user selecting where to shoot
             for event in pygame.event.get():
@@ -86,15 +94,15 @@ class BBTan:
                         self.balls_running = True
                         mouse_pos = pygame.mouse.get_pos()
                         print('click location: ' + str(mouse_pos[0]) + ', ' + str(mouse_pos[1]))
-                        ball_angle = math.atan2(mouse_pos[0] - self.ball_pos[0],
-                                                mouse_pos[1] - self.ball_pos[1])
 
                         for ball in self.balls:
+                            ball_angle = math.atan2(mouse_pos[1] - ball[2],
+                                                    mouse_pos[0] - ball[1])
+
                             ball[0] = ball_angle
 
                             # calc new velocities
-                            new_x = ball[1] + (self.ball_velx * math.cos(ball_angle))
-                            if new_x > ball[1]:
+                            if ball_angle < math.pi / 2:
                                 ball[3] = self.ball_velx
                             else:
                                 ball[3] = self.ball_velx * -1
