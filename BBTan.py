@@ -7,13 +7,14 @@ class BBTan:
 
     def __init__(self):
         pygame.init()
-        width, height = 640, 480
-        self.screen = pygame.display.set_mode((width, height))
+        self.width, self.height = 640, 480
+        self.screen = pygame.display.set_mode((self.width, self.height))
         self.balls_running = False
+        self.bottom = 430
 
         # index 0: lower number is left and higher number is right
         # index 1: lower number is up and higher number is down
-        self.ball_pos = [300, 460]
+        self.ball_pos = [300, self.bottom]
         self.ball_velx = 1
         self.ball_vely = 1
 
@@ -35,10 +36,9 @@ class BBTan:
         game = True
         pygame.display.flip()
         while game:
-            self.screen.fill(0)
+            self.screen.fill((255, 255, 255))
 
             if self.balls_running:
-                print('balls running. . .')
                 # balls are hitting blocks
                 balls_above_0 = 0
                 for ball in self.balls:
@@ -52,10 +52,10 @@ class BBTan:
                         ball[3] = ball[3] * -1
                     elif ball[2] < 0:
                         ball[4] = ball[4] * -1
-                    elif ball[2] > 460:
+                    elif ball[2] > self.bottom:
                         ball[3] = 0
                         ball[4] = 0
-                        ball[2] = 460
+                        ball[2] = self.bottom
 
                     for b in self.balls:
                         self.screen.blit(self.ball, (b[1], b[2]))
@@ -74,14 +74,18 @@ class BBTan:
                     self.screen.blit(self.ball, (ball[1], ball[2]))
 
             # write level number
-            font = pygame.font.Font(None, 24)
+            font = pygame.font.SysFont("Arial", 20)
+            level_text = font.render("Level: " + str(self.level), True, (0, 0, 0))
+            self.screen.blit(level_text, ((self.screen.get_width() - level_text.get_width() - 20), 455))
 
+            # draw bbtan
+            bbtan_text = font.render("BBTAN", True, (0, 0, 0))
+            self.screen.blit(bbtan_text, (20, 455))
+
+            # draw baseline
+            pygame.draw.line(self.screen, (0,0,0), (0, 450), (self.width, 450))
 
             pygame.display.flip()
-            level_text = font.render("Level: " + str(self.level), True, (255, 255, 255))
-            textRect = level_text.get_rect()
-            textRect.topright = [0, 0]
-            self.screen.blit(level_text, textRect)
 
             # user selecting where to shoot
             for event in pygame.event.get():
