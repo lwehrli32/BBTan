@@ -8,7 +8,7 @@ class Block:
         self.lives = lives
         self.x = x
         self.y = y
-        self.length = 57
+        self.length = 62
         self.boundries = pygame.Rect(self.x, self.y, self.length, self.length)
 
         pink = (255, 102, 178)

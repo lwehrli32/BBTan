@@ -15,8 +15,8 @@ class BBTan:
         self.balls_running = False
         self.balls_on_ground = False
         self.bottom = 430
-        self.ball_velx = 1
-        self.ball_vely = 1
+        self.ball_velx = 0.5
+        self.ball_vely = 0.5
         self.blocks = []
         self.balls = []
         self.width = 640
@@ -33,7 +33,6 @@ class BBTan:
 
         # render first block
         self.possible_block_positions = [0, 62, 124, 186, 248, 310, 372, 434, 496, 558]
-        self.taken_blocks = []
 
         # get a random number of blocks
         self.add_blocks()
@@ -50,13 +49,16 @@ class BBTan:
         pygame.display.flip()
 
     def add_blocks(self):
-        num_blocks = randint(1, 10)
+        num_blocks = randint(2, 11)
+        taken_blocks = []
         for b in range(num_blocks):
-            if not (b in self.taken_blocks):
+            if not (b in taken_blocks):
                 pos = randint(0, len(self.possible_block_positions) - 1)
                 block = Block(self.level, self.possible_block_positions[pos], 0)
                 self.blocks.append(block)
-                self.taken_blocks.append(pos)
+                taken_blocks.append(pos)
+            else:
+                b -= 1
 
     def play_game(self):
         game = True
@@ -127,10 +129,12 @@ class BBTan:
 
                 if balls_above_0 == 0:
                     # new level
-                    print('new level!')
                     self.level += 1
                     self.balls_running = False
                     self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0])
+
+                    self.ball_velx = self.ball_velx + 0.5
+                    self.ball_vely = self.ball_vely + 0.5
 
                     # move current blocks down
                     for block in self.blocks:
@@ -143,6 +147,9 @@ class BBTan:
             # render blocks
             for block in self.blocks:
                 block.draw_block(self.screen)
+
+                if block.y >= self.bottom:
+                    game = False
 
             # display balls
             for ball in self.balls:
