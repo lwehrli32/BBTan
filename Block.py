@@ -9,6 +9,8 @@ class Block:
         self.x = x
         self.y = y
         self.length = 57
+        self.boundries = pygame.Rect(self.x, self.y, self.length, self.length)
+        self.center = (self.x + ((self.length / 2) - 5), (self.length / 2) - 10)
 
         pink = (255, 102, 178)
         green = (0, 204, 102)
@@ -24,6 +26,6 @@ class Block:
         self.lives -= 1
 
     def draw_block(self, screen):
-        pygame.draw.rect(screen, self.color, pygame.Rect(self.x, self.y, self.length, self.length), 2)
+        pygame.draw.rect(screen, self.color, self.boundries, 2)
         lives_text = self.font.render(str(self.lives), True, self.color)
-        screen.blit(lives_text, (self.x + ((self.length / 2) - 5), (self.length / 2) - 10))
+        screen.blit(lives_text, self.center)

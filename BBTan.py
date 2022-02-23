@@ -14,8 +14,8 @@ class BBTan:
         self.max_blocks = 10
         self.balls_running = False
         self.bottom = 430
-        self.ball_velx = 0.5
-        self.ball_vely = 0.5
+        self.ball_velx = 1
+        self.ball_vely = 1
         self.blocks = []
         self.balls = []
         self.width = 640
@@ -33,14 +33,9 @@ class BBTan:
         # render first block
         self.possible_block_positions = [0, 62, 124, 186, 248, 310, 372, 434, 496, 558]
         self.taken_blocks = []
-        num_blocks = randint(1, 10)
 
-        for b in range(num_blocks):
-            if not (b in self.taken_blocks):
-                pos = randint(0, len(self.possible_block_positions) - 1)
-                block = Block(self.level, self.possible_block_positions[pos], 0)
-                self.blocks.append(block)
-                self.taken_blocks.append(pos)
+        # get a random number of blocks
+        self.add_blocks(0)
 
         # load imgs
         self.ball = pygame.image.load("imgs/soccer_ball.png")
@@ -53,6 +48,15 @@ class BBTan:
 
         pygame.display.flip()
 
+    def add_blocks(self, y):
+        num_blocks = randint(1, 10)
+        for b in range(num_blocks):
+            if not (b in self.taken_blocks):
+                pos = randint(0, len(self.possible_block_positions) - 1)
+                block = Block(self.level, self.possible_block_positions[pos], y)
+                self.blocks.append(block)
+                self.taken_blocks.append(pos)
+
     def play_game(self):
         game = True
 
@@ -61,10 +65,6 @@ class BBTan:
 
             if self.balls_running:
                 # balls are hitting blocks
-
-                # render blocks
-                for block in self.blocks:
-                    block.draw_block(self.screen)
 
                 # render balls
                 balls_above_0 = 0
@@ -75,14 +75,43 @@ class BBTan:
                     ball[1] += velx
                     ball[2] += vely
 
-                    if ball[1] < 0 or ball[1] > 620:
+                    if ball[1] > 620:
                         ball[3] = ball[3] * -1
+                        ball[1] = 620
+                    elif ball[1] < 0:
+                        ball[3] = ball[3] * -1
+                        ball[1] = 0
                     elif ball[2] < 0:
                         ball[4] = ball[4] * -1
+                        ball[2] = 0
                     elif ball[2] > self.bottom:
                         ball[3] = 0
                         ball[4] = 0
                         ball[2] = self.bottom
+
+                    ball_rect = self.ball.get_rect()
+                    ball_rect.x = ball[1]
+                    ball_rect.y = ball[2]
+                    for block in self.blocks:
+                        block_rect = block.boundries
+
+                        if ball_rect.colliderect(block_rect):
+                            block.decrement_lives()
+
+                            block_min_x = block.x
+                            block_max_x = block.x + block.length
+                            block_min_y = block.y
+                            block_max_y = block.y + block.length
+                            if block_min_x < ball[1] < block_max_x:
+                                ball[4] = ball[4] * -1
+                            elif block_min_y < ball[2] < block_max_y:
+                                ball[3] = ball[3] * -1
+                            else:
+                                print('error')
+
+                            # check if block is out of lives
+                            if block.lives <= 0:
+                                self.blocks.remove(block)
 
                     for b in self.balls:
                         self.screen.blit(self.ball, (b[1], b[2]))
