@@ -21,6 +21,10 @@ class BBTan:
         self.balls = []
         self.width = 640
         self.height = 480
+        self.ball_angle = 0
+        self.balls_ran = 0
+        self.ball_timer = 0
+        self.ball_delay = 150
 
         # index 0: lower number is left and higher number is right
         # index 1: lower number is up and higher number is down
@@ -42,7 +46,7 @@ class BBTan:
         self.ball = pygame.transform.scale(self.ball, (20, 20))
 
         # init starting balls
-        self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0])
+        self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0, 0])
 
         self.screen.blit(self.ball, (self.balls[0][1], self.balls[0][2]))
 
@@ -68,6 +72,23 @@ class BBTan:
 
             if self.balls_running:
                 # balls are hitting blocks
+
+                if pygame.time.get_ticks() - self.ball_timer > self.ball_delay and self.balls_ran < len(self.balls):
+                    for ball in self.balls:
+                        if ball[3] == 0 and ball[4] == 0 and ball[5] == 0:
+                            ball[0] = self.ball_angle
+
+                            # calc new velocities
+                            if self.ball_angle < math.pi / 2:
+                                ball[3] = self.ball_velx
+                            else:
+                                ball[3] = self.ball_velx * -1
+
+                            ball[4] = self.ball_vely
+                            ball[5] = 1
+                            self.ball_timer = pygame.time.get_ticks()
+                            self.balls_ran += 1
+                            break
 
                 # render balls
                 balls_above_0 = 0
@@ -110,12 +131,10 @@ class BBTan:
                             block_max_x = block.x + block.length
                             block_min_y = block.y
                             block_max_y = block.y + block.length
-                            if block_min_x < ball[1] < block_max_x:
+                            if block_min_x <= ball[1] <= block_max_x:
                                 ball[4] = ball[4] * -1
-                            elif block_min_y < ball[2] < block_max_y:
+                            elif block_min_y <= ball[2] <= block_max_y:
                                 ball[3] = ball[3] * -1
-                            else:
-                                print('error')
 
                             # check if block is out of lives
                             if block.lives <= 0:
@@ -124,17 +143,22 @@ class BBTan:
                     for b in self.balls:
                         self.screen.blit(self.ball, (b[1], b[2]))
 
-                    if ball[3] != 0 and ball[4] != 0:
+                    if ball[3] != 0 and ball[4] != 0 and ball[5] == 1:
                         balls_above_0 += 1
 
-                if balls_above_0 == 0:
+                if balls_above_0 == 0 and self.balls_ran == len(self.balls):
                     # new level
                     self.level += 1
                     self.balls_running = False
-                    self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0])
+                    self.balls_ran = 0
+
+                    self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0, 0])
 
                     self.ball_velx = self.ball_velx + 0.5
                     self.ball_vely = self.ball_vely + 0.5
+
+                    for ball in self.balls:
+                        ball[5] = 0
 
                     # move current blocks down
                     for block in self.blocks:
@@ -180,16 +204,16 @@ class BBTan:
                         mouse_pos = pygame.mouse.get_pos()
                         print('click location: ' + str(mouse_pos[0]) + ', ' + str(mouse_pos[1]))
 
-                        for ball in self.balls:
-                            ball_angle = math.atan2(mouse_pos[1] - ball[2],
-                                                    mouse_pos[0] - ball[1])
+                        self.ball_angle = math.atan2(mouse_pos[1] - self.balls[0][2], mouse_pos[0] - self.balls[0][1])
+                        self.balls[0][0] = self.ball_angle
 
-                            ball[0] = ball_angle
+                        # calc new velocities
+                        if self.ball_angle < math.pi / 2:
+                            self.balls[0][3] = self.ball_velx
+                        else:
+                            self.balls[0][3] = self.ball_velx * -1
 
-                            # calc new velocities
-                            if ball_angle < math.pi / 2:
-                                ball[3] = self.ball_velx
-                            else:
-                                ball[3] = self.ball_velx * -1
-
-                            ball[4] = self.ball_vely
+                        self.balls[0][4] = self.ball_vely
+                        self.balls[0][5] = 1
+                        self.ball_timer = pygame.time.get_ticks()
+                        self.balls_ran += 1
