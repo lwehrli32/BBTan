@@ -13,6 +13,7 @@ class BBTan:
         self.level = 1
         self.max_blocks = 10
         self.balls_running = False
+        self.balls_on_ground = False
         self.bottom = 430
         self.ball_velx = 1
         self.ball_vely = 1
@@ -85,9 +86,14 @@ class BBTan:
                         ball[4] = ball[4] * -1
                         ball[2] = 0
                     elif ball[2] > self.bottom:
+                        if not self.balls_on_ground:
+                            self.balls_on_ground = True
+                            self.ball_pos[0] = ball[1]
+
                         ball[3] = 0
                         ball[4] = 0
                         ball[2] = self.bottom
+                        ball[1] = self.ball_pos[0]
 
                     ball_rect = self.ball.get_rect()
                     ball_rect.x = ball[1]
@@ -123,7 +129,10 @@ class BBTan:
                     # new level
                     self.level += 1
                     self.balls_running = False
+                    self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0])
                     print('new level!')
+            else:
+                self.balls_on_ground = False
 
             # render blocks
             for block in self.blocks:
