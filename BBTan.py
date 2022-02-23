@@ -3,6 +3,7 @@ import pygame
 from random import randint
 
 from Block import Block
+from PowerUp import PowerUp
 from Stats import Stats
 
 
@@ -28,6 +29,7 @@ class BBTan:
         self.ball_delay = 150
         self.stats = Stats()
         self.highscore = self.stats.read_score()
+        self.powerups = []
 
         # index 0: lower number is left and higher number is right
         # index 1: lower number is up and higher number is down
@@ -55,6 +57,15 @@ class BBTan:
 
         self.screen.blit(self.ball, (self.balls[0][1], self.balls[0][2]))
 
+        x = randint(30, 600)
+        y = randint(30, 390)
+        while self.power_up_collides(x, y):
+            x = randint(30, 600)
+            y = randint(30, 390)
+
+        new_powerup = PowerUp(self.screen, 0, x, y)
+        self.powerups.append(new_powerup)
+
         pygame.display.flip()
 
     def add_blocks(self):
@@ -69,6 +80,13 @@ class BBTan:
                 self.blocks.append(block)
                 taken_blocks.append(pos)
                 num_blocks += 1
+
+    def power_up_collides(self, x, y):
+        power_rect = pygame.Rect(x, y, 20, 20)
+        for block in self.blocks:
+            if block.boundries.colliderect(power_rect):
+                return True
+        return False
 
     def play_game(self):
         game = True
@@ -146,6 +164,16 @@ class BBTan:
                             if block.lives <= 0:
                                 self.blocks.remove(block)
 
+                    for powerup in self.powerups:
+                        rect = powerup.img.get_rect()
+                        rect.x = powerup.x
+                        rect.y = powerup.y
+                        if ball_rect.colliderect(rect):
+                            powerup_type = powerup.powerup_type
+                            if powerup_type == 0:
+                                powerup.hit = True
+                                powerup.show = False
+
                     for b in self.balls:
                         self.screen.blit(self.ball, (b[1], b[2]))
 
@@ -158,7 +186,14 @@ class BBTan:
                     self.balls_running = False
                     self.balls_ran = 0
 
-                    self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0, 0])
+                    x = randint(30, 600)
+                    y = randint(30, 390)
+                    while self.power_up_collides(x, y):
+                        x = randint(30, 600)
+                        y = randint(30, 390)
+
+                    new_powerup = PowerUp(self.screen, 0, x, y)
+                    self.powerups.append(new_powerup)
 
                     self.ball_velx = self.ball_velx + 0.15
                     self.ball_vely = self.ball_vely + 0.15
@@ -170,6 +205,14 @@ class BBTan:
                     for block in self.blocks:
                         block.y = block.y + 62
                     self.add_blocks()
+
+                    for powerup in self.powerups:
+                        powerup.y = powerup.y + 62
+                        if powerup.hit:
+                            if powerup.powerup_type == 0:
+                                self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0, 0])
+                            self.powerups.remove(powerup)
+
 
             else:
                 self.balls_on_ground = False
@@ -184,6 +227,13 @@ class BBTan:
             # display balls
             for ball in self.balls:
                 self.screen.blit(self.ball, (ball[1], ball[2]))
+
+            # render power ups
+            for powerup in self.powerups:
+                if powerup.show:
+                    self.screen.blit(powerup.img, (powerup.x, powerup.y))
+                elif powerup.y >= self.bottom:
+                    self.powerups.remove(powerup)
 
             # write level number
             level_text = self.font.render("Level: " + str(self.level), True, (0, 0, 0))
@@ -237,12 +287,16 @@ class BBTan:
         self.screen.blit(text, textRect)
 
         # record stats
-        self.stats.record_score(self.level)
+        if self.level > self.highscore:
+            self.stats.record_score(self.level)
         self.stats.calc_avg(self.level)
 
-        while 1:
+        self.ball_timer = pygame.time.get_ticks()
+        while pygame.time.get_ticks() - self.ball_timer < 5000:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pygame.quit()
                     exit(0)
             pygame.display.flip()
+
+        return True
