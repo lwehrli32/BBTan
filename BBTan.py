@@ -45,6 +45,8 @@ class BBTan:
         self.ball = pygame.image.load("imgs/soccer_ball.png")
         self.ball = pygame.transform.scale(self.ball, (20, 20))
 
+        self.gameover = pygame.image.load("imgs/gameover.png")
+
         # init starting balls
         self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0, 0])
 
@@ -217,3 +219,19 @@ class BBTan:
                         self.balls[0][5] = 1
                         self.ball_timer = pygame.time.get_ticks()
                         self.balls_ran += 1
+
+        pygame.font.init()
+        font = pygame.font.Font(None, 24)
+        text = font.render("Score: " + str(self.level), True, (0, 0, 0))
+        textRect = text.get_rect()
+        textRect.centerx = self.screen.get_rect().centerx
+        textRect.centery = self.screen.get_rect().centery + 24
+        self.screen.blit(self.gameover, (0, 0))
+        self.screen.blit(text, textRect)
+
+        while 1:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    pygame.quit()
+                    exit(0)
+            pygame.display.flip()
