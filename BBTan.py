@@ -36,7 +36,7 @@ class BBTan:
         self.taken_blocks = []
 
         # get a random number of blocks
-        self.add_blocks(0)
+        self.add_blocks()
 
         # load imgs
         self.ball = pygame.image.load("imgs/soccer_ball.png")
@@ -49,12 +49,12 @@ class BBTan:
 
         pygame.display.flip()
 
-    def add_blocks(self, y):
+    def add_blocks(self):
         num_blocks = randint(1, 10)
         for b in range(num_blocks):
             if not (b in self.taken_blocks):
                 pos = randint(0, len(self.possible_block_positions) - 1)
-                block = Block(self.level, self.possible_block_positions[pos], y)
+                block = Block(self.level, self.possible_block_positions[pos], 0)
                 self.blocks.append(block)
                 self.taken_blocks.append(pos)
 
@@ -127,10 +127,16 @@ class BBTan:
 
                 if balls_above_0 == 0:
                     # new level
+                    print('new level!')
                     self.level += 1
                     self.balls_running = False
                     self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0])
-                    print('new level!')
+
+                    # move current blocks down
+                    for block in self.blocks:
+                        block.y = block.y + 62
+                    self.add_blocks()
+
             else:
                 self.balls_on_ground = False
 

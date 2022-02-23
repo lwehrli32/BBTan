@@ -10,7 +10,6 @@ class Block:
         self.y = y
         self.length = 57
         self.boundries = pygame.Rect(self.x, self.y, self.length, self.length)
-        self.center = (self.x + ((self.length / 2) - 5), (self.length / 2) - 10)
 
         pink = (255, 102, 178)
         green = (0, 204, 102)
@@ -25,7 +24,11 @@ class Block:
     def decrement_lives(self):
         self.lives -= 1
 
+    def reset_boundaries(self):
+        self.boundries = pygame.Rect(self.x, self.y, self.length, self.length)
+
     def draw_block(self, screen):
+        self.reset_boundaries()
         pygame.draw.rect(screen, self.color, self.boundries, 2)
         lives_text = self.font.render(str(self.lives), True, self.color)
-        screen.blit(lives_text, self.center)
+        screen.blit(lives_text, (self.x + ((self.length / 2) - 5), self.y + (self.length / 2) - 10))
