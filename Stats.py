@@ -1,3 +1,5 @@
+from os.path import exists
+
 class Stats:
 
     def __init__(self):
@@ -28,6 +30,13 @@ class Stats:
 
     @staticmethod
     def calc_avg(curr_score):
+
+        file_exists = exists('avg.txt')
+        if not file_exists:
+            file = open("avg.txt", "w")
+            file.write('0,0')
+            file.close()
+
         file = open("avg.txt", "r")
         line = file.readline()
         file.close()
