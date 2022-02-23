@@ -3,6 +3,7 @@ import pygame
 from random import randint
 
 from Block import Block
+from Stats import Stats
 
 
 class BBTan:
@@ -25,6 +26,8 @@ class BBTan:
         self.balls_ran = 0
         self.ball_timer = 0
         self.ball_delay = 150
+        self.stats = Stats()
+        self.highscore = self.stats.read_score()
 
         # index 0: lower number is left and higher number is right
         # index 1: lower number is up and higher number is down
@@ -188,7 +191,11 @@ class BBTan:
 
             # draw bbtan
             bbtan_text = self.font.render("BBTAN", True, (0, 0, 0))
-            self.screen.blit(bbtan_text, (20, 455))
+            self.screen.blit(bbtan_text, ((self.screen.get_width() / 2 - level_text.get_width() - 20), 455))
+
+            # draw highscore
+            high_score = self.font.render("High Score: " + str(self.highscore), True, (0, 0, 0))
+            self.screen.blit(high_score, (20, 455))
 
             # draw baseline
             pygame.draw.line(self.screen, (0, 0, 0), (0, 450), (self.width, 450))
@@ -228,6 +235,10 @@ class BBTan:
         textRect.centery = self.screen.get_rect().centery + 24
         self.screen.blit(self.gameover, (0, 0))
         self.screen.blit(text, textRect)
+
+        # record stats
+        self.stats.record_score(self.level)
+        self.stats.calc_avg(self.level)
 
         while 1:
             for event in pygame.event.get():
