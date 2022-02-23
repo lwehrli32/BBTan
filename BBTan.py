@@ -15,8 +15,8 @@ class BBTan:
         self.balls_running = False
         self.balls_on_ground = False
         self.bottom = 430
-        self.ball_velx = 0.5
-        self.ball_vely = 0.5
+        self.ball_velx = 0.75
+        self.ball_vely = 0.75
         self.blocks = []
         self.balls = []
         self.width = 640
@@ -53,16 +53,17 @@ class BBTan:
         pygame.display.flip()
 
     def add_blocks(self):
-        num_blocks = randint(2, 11)
+        total_num_blocks = randint(1, 8)
         taken_blocks = []
-        for b in range(num_blocks):
-            if not (b in taken_blocks):
-                pos = randint(0, len(self.possible_block_positions) - 1)
+        num_blocks = 0
+
+        while num_blocks < total_num_blocks:
+            pos = randint(0, len(self.possible_block_positions) - 1)
+            if not (pos in taken_blocks):
                 block = Block(self.level, self.possible_block_positions[pos], 0)
                 self.blocks.append(block)
                 taken_blocks.append(pos)
-            else:
-                b -= 1
+                num_blocks += 1
 
     def play_game(self):
         game = True
@@ -154,8 +155,8 @@ class BBTan:
 
                     self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0, 0])
 
-                    self.ball_velx = self.ball_velx + 0.5
-                    self.ball_vely = self.ball_vely + 0.5
+                    self.ball_velx = self.ball_velx + 0.15
+                    self.ball_vely = self.ball_vely + 0.15
 
                     for ball in self.balls:
                         ball[5] = 0
@@ -202,7 +203,6 @@ class BBTan:
                     if not self.balls_running:
                         self.balls_running = True
                         mouse_pos = pygame.mouse.get_pos()
-                        print('click location: ' + str(mouse_pos[0]) + ', ' + str(mouse_pos[1]))
 
                         self.ball_angle = math.atan2(mouse_pos[1] - self.balls[0][2], mouse_pos[0] - self.balls[0][1])
                         self.balls[0][0] = self.ball_angle
