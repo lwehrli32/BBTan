@@ -44,7 +44,7 @@ class BBTan:
         self.possible_block_positions = [0, 62, 124, 186, 248, 310, 372, 434, 496, 558]
 
         # get a random number of blocks
-        self.add_blocks()
+        self.add_new_row()
 
         # load imgs
         self.ball = pygame.image.load("imgs/soccer_ball.png")
@@ -57,36 +57,26 @@ class BBTan:
 
         self.screen.blit(self.ball, (self.balls[0][1], self.balls[0][2]))
 
-        x = randint(30, 600)
-        y = randint(30, 390)
-        while self.power_up_collides(x, y):
-            x = randint(30, 600)
-            y = randint(30, 390)
-
-        new_powerup = PowerUp(self.screen, 0, x, y)
-        self.powerups.append(new_powerup)
-
         pygame.display.flip()
 
-    def add_blocks(self):
+    def add_new_row(self):
         total_num_blocks = randint(1, 8)
         taken_blocks = []
         num_blocks = 0
 
+        pos = randint(0, len(self.possible_block_positions) - 1)
+        taken_blocks.append(pos)
+        new_powerup = PowerUp(self.screen, 0, self.possible_block_positions[pos] + 20, 25)
+        self.powerups.append(new_powerup)
+
         while num_blocks < total_num_blocks:
             pos = randint(0, len(self.possible_block_positions) - 1)
             if not (pos in taken_blocks):
-                block = Block(self.level, self.possible_block_positions[pos], 0)
+                block = Block(self.level * 2 if self.level % 10 == 0 else self.level,
+                              self.possible_block_positions[pos], 0, color=(255, 0, 0) if self.level % 10 == 0 else None)
                 self.blocks.append(block)
                 taken_blocks.append(pos)
                 num_blocks += 1
-
-    def power_up_collides(self, x, y):
-        power_rect = pygame.Rect(x, y, 20, 20)
-        for block in self.blocks:
-            if block.boundries.colliderect(power_rect):
-                return True
-        return False
 
     def play_game(self):
         game = True
@@ -145,24 +135,54 @@ class BBTan:
                     ball_rect = self.ball.get_rect()
                     ball_rect.x = ball[1]
                     ball_rect.y = ball[2]
+                    bad_blocks = []
                     for block in self.blocks:
+                        collision = False
                         block_rect = block.boundries
+                        block_rect.x = block.x
+                        block_rect.y = block.y
+                        block_right = block.x + block.length
+                        block_left = block.x
+                        block_top = block.y
+                        block_bottom = block.y + block.length
+                        ball_left = ball_rect.x
+                        ball_right = ball_rect.x + 20
+                        ball_top = ball_rect.y
+                        ball_bottom = ball_rect.y + 20
 
-                        if ball_rect.colliderect(block_rect):
+                        if block_left <= ball_right <= block_right and block_bottom >= ball_top >= block_top:
+                            collision = True
+                        if block_left <= ball_left <= block_right and block_bottom >= ball_top >= block_top:
+                            collision = True
+                        if block_left <= ball_right <= block_right and block_bottom >= ball_bottom >= block_top:
+                            collision = True
+                        if block_left <= ball_left <= block_right and block_bottom >= ball_bottom >= block_top:
+                            collision = True
+
+                        if ball_rect.colliderect(block_rect) and collision:
                             block.decrement_lives()
 
                             block_min_x = block.x
                             block_max_x = block.x + block.length
                             block_min_y = block.y
                             block_max_y = block.y + block.length
-                            if block_min_x <= ball[1] <= block_max_x:
-                                ball[4] = ball[4] * -1
-                            elif block_min_y <= ball[2] <= block_max_y:
+                            if block_min_y <= ball[2] <= block_max_y and (0 <= block_min_x - ball[1] <= 20):
+                                ball[1] = block_min_x - 1
                                 ball[3] = ball[3] * -1
+                            elif block_min_y <= ball[2] <= block_max_y and (0 <= block_max_x - ball[1] <= 20):
+                                ball[1] = block_max_x + 1
+                                ball[3] = ball[3] * -1
+                            elif block_min_x <= ball[1] <= block_max_x and (0 <= block_max_y - ball[2] <= 20):
+                                ball[2] = block_max_y + 1
+                                ball[4] = ball[4] * -1
+                            elif block_min_x <= ball[1] <= block_max_x and (0 <= block_min_y - ball[2] <= 20):
+                                ball[2] = block_min_y - 1
+                                ball[4] = ball[4] * -1
 
                             # check if block is out of lives
                             if block.lives <= 0:
-                                self.blocks.remove(block)
+                                bad_blocks.append(block)
+                    self.blocks = [b for b in self.blocks if (b not in bad_blocks)]
 
                     for powerup in self.powerups:
                         rect = powerup.img.get_rect()
@@ -174,8 +194,8 @@ class BBTan:
                                 powerup.hit = True
                                 powerup.show = False
 
-                    for b in self.balls:
-                        self.screen.blit(self.ball, (b[1], b[2]))
+                    #for b in self.balls:
+                        #self.screen.blit(self.ball, (b[1], b[2]))
 
                     if ball[3] != 0 and ball[4] != 0 and ball[5] == 1:
                         balls_above_0 += 1
@@ -186,17 +206,8 @@ class BBTan:
                     self.balls_running = False
                     self.balls_ran = 0
 
-                    x = randint(30, 600)
-                    y = randint(30, 390)
-                    while self.power_up_collides(x, y):
-                        x = randint(30, 600)
-                        y = randint(30, 390)
-
-                    new_powerup = PowerUp(self.screen, 0, x, y)
-                    self.powerups.append(new_powerup)
-
-                    self.ball_velx = self.ball_velx + 0.15
-                    self.ball_vely = self.ball_vely + 0.15
+                    #self.ball_velx = self.ball_velx + 0.15
+                    #self.ball_vely = self.ball_vely + 0.15
 
                     for ball in self.balls:
                         ball[5] = 0
@@ -204,15 +215,18 @@ class BBTan:
                     # move current blocks down
                     for block in self.blocks:
                         block.y = block.y + 62
-                    self.add_blocks()
 
+                    bad_powerups = []
                     for powerup in self.powerups:
                         powerup.y = powerup.y + 62
                         if powerup.hit:
                             if powerup.powerup_type == 0:
                                 self.balls.append([0, self.ball_pos[0], self.ball_pos[1], 0, 0, 0])
-                            self.powerups.remove(powerup)
+                            bad_powerups.append(powerup)
 
+                    self.powerups = [p for p in self.powerups if (p not in bad_powerups)]
+
+                    self.add_new_row()
 
             else:
                 self.balls_on_ground = False
@@ -229,11 +243,15 @@ class BBTan:
                 self.screen.blit(self.ball, (ball[1], ball[2]))
 
             # render power ups
+            bad_powerups = []
             for powerup in self.powerups:
+                if powerup.y >= self.bottom:
+                    bad_powerups.append(powerup)
+                    powerup.show = False
+
                 if powerup.show:
                     self.screen.blit(powerup.img, (powerup.x, powerup.y))
-                elif powerup.y >= self.bottom:
-                    self.powerups.remove(powerup)
+            self.powerups = [p for p in self.powerups if (p not in bad_powerups)]
 
             # write level number
             level_text = self.font.render("Level: " + str(self.level), True, (0, 0, 0))
@@ -298,5 +316,3 @@ class BBTan:
                     pygame.quit()
                     exit(0)
             pygame.display.flip()
-
-        return True

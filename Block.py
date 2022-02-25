@@ -4,20 +4,23 @@ import pygame
 
 class Block:
 
-    def __init__(self, lives, x, y):
+    def __init__(self, lives, x, y, color=None):
         self.lives = lives
         self.x = x
         self.y = y
         self.length = 62
         self.boundries = pygame.Rect(self.x, self.y, self.length, self.length)
 
-        pink = (255, 102, 178)
-        green = (0, 204, 102)
-        orange = (255, 153, 51)
-        purple = (153, 51, 255)
-        colors = [pink, green, orange, purple]
-        pos = randint(0, len(colors) - 1)
-        self.color = colors[pos]
+        if color:
+            self.color = color
+        else:
+            pink = (255, 102, 178)
+            green = (0, 204, 102)
+            orange = (255, 153, 51)
+            purple = (153, 51, 255)
+            colors = [pink, green, orange, purple]
+            pos = randint(0, len(colors) - 1)
+            self.color = colors[pos]
 
         self.font = pygame.font.SysFont("Arial", 20)
 
